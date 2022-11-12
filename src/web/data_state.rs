@@ -1,20 +1,14 @@
-use core::panic;
-use std::default;
+use crate::data::data_dictionary::DataDictionary;
 use crate::data::data_dictionary::DataRow;
-use crate::data::{prelude::*, data_dictionary::DataDictionary};
-use crate::web::prelude::*;
 
 use csv::Reader;
 use itertools::Itertools;
 
-use rand::{rngs::StdRng, Rng, SeedableRng};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-use bytes::{Bytes, Buf};
+use bytes::Buf;
 
 use yewdux::prelude::*;
-
-
 
 #[derive(PartialEq, Eq, Store, Default)]
 pub struct DataState {
@@ -32,7 +26,7 @@ impl DataState {
         let result = reqwest::get(url).await;
         let response = result?;
         //let text = data.text().await?;
-        
+
         let bytes = response.bytes().await?;
         //let reader = bytes.reader();
 
@@ -40,9 +34,8 @@ impl DataState {
 
         let rows: Vec<DataRow> = rdr.deserialize().try_collect()?;
 
-        let data : DataDictionary = rows.try_into()?;
+        let data: DataDictionary = rows.try_into()?;
 
         Ok(Self { data })
-
     }
 }

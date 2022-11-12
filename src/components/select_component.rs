@@ -5,7 +5,6 @@ use yewdux::prelude::*;
 
 use super::messages::SelectMessage;
 
-
 #[derive(Properties, PartialEq)]
 
 pub struct ClassAndStyle {

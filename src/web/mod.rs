@@ -1,8 +1,8 @@
 pub mod app;
 pub mod creation_state;
 pub mod data_state;
-pub mod saved_characters_state;
 pub mod proceed_message;
+pub mod saved_characters_state;
 
 pub mod prelude {
 
