@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no target-densitydpi=device-dpi"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <title>Hypno Hobo</title>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Hypno Hobo" />
+    <meta
+      property="og:url"
+      content="https://wainwrightmark.github.io/Hypno_Hobo/"
+    />
+    <meta property="og:site_name" content="Hypno Hobo" />
+    <meta property="og:description" content="Welcome to Puchansk!" />
+
+    <meta
+      property="og:image"
+      content="https://repository-images.githubusercontent.com/548829841/c540fb93-21d9-4285-aefd-2fa7d17e18a2"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+
+    <link data-trunk rel="css" href="styles.css" />
+  </head>
+
+  <body style="background: var(--main-background)">
+    <link rel="rust" data-trunk href="Cargo.toml" data-bin="hypno-hobo" />
+  </body>
+</html>
+
+<style>
+  body {
+    touch-action: manipulation;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
+  }
+</style>
+<!-- <script>
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
+    document.body.classList.add("dark");
+  }
+</script> -->
