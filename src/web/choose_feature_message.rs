@@ -1,26 +1,28 @@
-use core::panic;
 use std::sync::Arc;
-
-use itertools::Itertools;
 use yew::html;
 use yewdux::prelude::Dispatch;
 
 use crate::components::*;
-use crate::data::{Class, ClassFeature};
+use crate::data::{ ClassFeature};
 use crate::web::*;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ChooseFeatureMessage(pub Arc<ClassFeature>);
+#[derive(Debug, Clone, PartialEq, Default, Copy)]
+pub struct ChooseFeatureMessage();
 
 impl StoreProperty for ChooseFeatureMessage {
     type State = CreationState;
+    type Value = Arc<ClassFeature>;
 
-    fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
+    fn try_apply(
+        &self,
+        value: &Self::Value,
+        state: std::rc::Rc<Self::State>,
+    ) -> Option<std::rc::Rc<Self::State>> {
         if let Stage::ClassFeature { feature: _ } = state.stage.clone() {
             Some(
                 state
                     .change_stage(Stage::ClassFeature {
-                        feature: self.0.clone(),
+                        feature: value.clone(),
                     })
                     .into(),
             )
@@ -28,10 +30,25 @@ impl StoreProperty for ChooseFeatureMessage {
             None
         }
     }
+
+    fn get_current_value(&self, state: &Self::State) -> Self::Value {
+        if let Stage::ClassFeature { feature } = state.stage.clone() {
+            feature
+        } else {
+            ClassFeature {
+                name: "Unknown".to_string().into(),
+                class_name: "Unknown".to_string().into(),
+                description: Default::default(),
+                image: None,
+                level: 1,
+            }
+            .into()
+        }
+    }
 }
 
 impl CarouselProperty for ChooseFeatureMessage {
-    fn get_values(state: &Self::State) -> Vec<Self> {
+    fn get_values(&self, state: &Self::State) -> Vec<Self::Value> {
         if let Stage::ClassFeature { feature } = state.stage.clone() {
             if let Some(c) = state
                 .dictionary
@@ -43,7 +60,7 @@ impl CarouselProperty for ChooseFeatureMessage {
                 let level = state.get_level_of_class(c.name.clone());
                 if let Some(vec) = c.features_by_level.get_vec(&(level + 1)) {
                     //log::info!("Found features");
-                    return vec.iter().map(|x| Self(x.clone())).collect();
+                    return vec.iter().map(|x| x.clone()).collect();
                 }
             }
         }
@@ -51,31 +68,18 @@ impl CarouselProperty for ChooseFeatureMessage {
         vec![]
     }
 
-    fn get_current_value(state: &Self::State) -> Self {
-        if let Stage::ClassFeature { feature } = state.stage.clone() {
-            Self(feature)
-        } else {
-            Self(
-                ClassFeature {
-                    name: "Unknown".to_string().into(),
-                    class_name: "Unknown".to_string().into(),
-                    description: Default::default(),
-                    image: None,
-                    level: 1,
-                }
-                .into(),
-            )
-        }
-    }
-
-    fn get_html(&self, _: &Self::State, classes: yew::Classes) -> yew::Html {
-        let onclick = Dispatch::<CreationState>::new()
-            .apply_callback(|_| PropertyReducer(ProceedMessage::default()));
+    fn get_html(&self, value: &Self::Value, _: &Self::State, classes: yew::Classes) -> yew::Html {
+        let onclick = Dispatch::<CreationState>::new().apply_callback(|_| PropertyReducer::<
+            ProceedMessage,
+        > {
+            property: Default::default(),
+            value: (),
+        });
         html!(
             <div class={classes}>
-                <h5 class="title" style="text-align: center;">{self.0.name.clone()}</h5>
+                <h5 class="title" style="text-align: center;">{value.name.clone()}</h5>
                 {
-                    if let Some(url) = self.0.image.clone(){
+                    if let Some(url) = value.image.clone(){
                         html!(
                             <img class="image" onclick={onclick}
                             src={format!("{}", url.0)  }
@@ -87,7 +91,7 @@ impl CarouselProperty for ChooseFeatureMessage {
                     }
                 }
                     <p class="description" >
-                    {self.0.description.clone()}
+                    {value.description.clone()}
                     </p>
             </div>
         )

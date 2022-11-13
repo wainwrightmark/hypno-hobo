@@ -1,4 +1,4 @@
-use crate::data::data_dictionary::Character;
+use crate::data::{character::Character};
 
 use serde::{Deserialize, Serialize};
 

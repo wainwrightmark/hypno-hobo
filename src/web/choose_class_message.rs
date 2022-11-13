@@ -8,18 +8,23 @@ use crate::components::*;
 use crate::data::Class;
 use crate::web::*;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ChooseClassMessage(pub Arc<Class>);
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct ChooseClassMessage();
 
 impl StoreProperty for ChooseClassMessage {
     type State = CreationState;
+    type Value = Arc<Class>;
 
-    fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
+    fn try_apply(
+        &self,
+        value: &Self::Value,
+        state: std::rc::Rc<Self::State>,
+    ) -> Option<std::rc::Rc<Self::State>> {
         if let Stage::Class { .. } = state.stage.clone() {
             Some(
                 state
                     .change_stage(Stage::Class {
-                        class: self.0.clone(),
+                        class: value.clone(),
                     })
                     .into(),
             )
@@ -27,42 +32,50 @@ impl StoreProperty for ChooseClassMessage {
             None
         }
     }
+
+    fn get_current_value(&self, state: &Self::State) -> Self::Value {
+        if let Stage::Class { class } = state.stage.clone() {
+            class.clone()
+        } else {
+            Class {
+                name: "Unknown".to_string().into(),
+                description: Default::default(),
+                image: None,
+                features_by_level: Default::default(),
+            }
+            .into()
+            //not good
+        }
+    }
 }
 
 impl CarouselProperty for ChooseClassMessage {
-    fn get_values(state: &Self::State) -> Vec<Self> {
+    fn get_values(&self, state: &Self::State) -> Vec<Self::Value> {
         state
             .dictionary
             .classes
             .iter()
-            .map(|x| Self(x.clone().into()))
+            .map(|x| x.clone().into())
             .collect_vec()
     }
 
-    fn get_current_value(state: &Self::State) -> Self {
-        if let Stage::Class { class } = state.stage.clone() {
-            Self(class.clone())
-        } else {
-            Self(
-                Class {
-                    name: "Unknown".to_string().into(),
-                    description: Default::default(),
-                    image: None,
-                    features_by_level: Default::default(),
-                }
-                .into(),
-            ) //not good
-        }
-    }
-
-    fn get_html(&self, state: &Self::State, classes: yew::Classes) -> yew::Html {
-        let onclick = Dispatch::<CreationState>::new()
-            .apply_callback(|_| PropertyReducer(ProceedMessage::default()));
+    fn get_html(
+        &self,
+        value: &Self::Value,
+        state: &Self::State,
+        classes: yew::Classes,
+    ) -> yew::Html {
+        let onclick = Dispatch::<CreationState>::new().apply_callback(|_| PropertyReducer::<
+            ProceedMessage,
+        > {
+            property: Default::default(),
+            value: (),
+        });
         html!(
             <div class={classes}>
-                <h5 class="title" style="text-align: center;">{self.0.name.clone()}</h5>
+                <h5 class="title" style="text-align: center;">{value.name.clone()}</h5>
                 {
-                    if let Some(url) = self.0.image.clone(){
+                    if let Some(url) = value.image.clone(){
                         html!(
                             <img class="image" onclick={onclick}
                             src={format!("{}", url.0)  }
@@ -74,7 +87,7 @@ impl CarouselProperty for ChooseClassMessage {
                     }
                 }
                     <p class="description" >
-                    {self.0.description.clone()}
+                    {value.description.clone()}
                     </p>
             </div>
         )

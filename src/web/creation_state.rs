@@ -5,6 +5,7 @@ use crate::data::*;
 use serde::{Deserialize, Serialize};
 
 use crate::data::data_dictionary::DataRow;
+use crate::data::character::*;
 use yewdux::prelude::*;
 
 use csv::{Reader, ReaderBuilder};

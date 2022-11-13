@@ -1,4 +1,3 @@
-use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yewdux::prelude::*;
 
@@ -30,28 +29,29 @@ pub fn content() -> Html {
         ClassFeature { feature: _ } => html!(<FeatureControl />),
         Stats => html!(<StatsControl />),
         Backstory => html!(<BackstoryControl />),
-        Finished => todo!(),
+        Finished => html!(< FinishedControl />),
     }
 }
 
 #[function_component(NameControl)]
 pub fn name_control() -> Html {
-
     html!(
         <div>
-            <TextComponent<SetNameProperty> />
-            <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
+        <h2>{"Name"}</h2>
+            <TextComponent<SetNameProperty> property={SetNameProperty::default()} />
+            <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
         </div>
     )
 }
 
 #[function_component(BackstoryControl)]
 pub fn backstory_control() -> Html {
-
     html!(
         <div>
-            <TextComponent<SetBackstoryProperty> />
-            <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
+        <h2>{"Backstory"}</h2>
+            <TextComponent<SetBackstoryProperty> property={SetBackstoryProperty::default()} />
+            <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+            <ButtonComponent<BackMessage> property={BackMessage::default()}/>
         </div>
     )
 }
@@ -60,9 +60,10 @@ pub fn backstory_control() -> Html {
 pub fn background_control() -> Html {
     html!(
         <div>
-        <CarouselComponent<ChooseBackgroundMessage> />
-        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
-        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+        <h2>{"Background"}</h2>
+        <CarouselComponent<ChooseBackgroundMessage> property={ChooseBackgroundMessage::default()} />
+        <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> property={BackMessage::default()}/>
         </div>
     )
 }
@@ -81,9 +82,9 @@ pub fn levels_control() -> Html {
                 <tr>
                 <td>{x.class.clone()} </td>
                 <td>{x.feature.clone()} </td>
-                <td><ButtonComponent<AddLevelOfClassMessage> message={AddLevelOfClassMessage(x.class.clone())}  /> </td>
+                <td><ButtonComponent<AddLevelOfClassMessage> property={AddLevelOfClassMessage(x.class.clone())}  /> </td>
                 <td>
-                {if is_last {html!(<ButtonComponent<RemoveLastLevelMessage> message={RemoveLastLevelMessage::default()} />)} else{html!(<> </>)}}
+                {if is_last {html!(<ButtonComponent<RemoveLastLevelMessage> property={RemoveLastLevelMessage::default()} />)} else{html!(<> </>)}}
                 </td>
                 </tr>
             )
@@ -92,14 +93,14 @@ pub fn levels_control() -> Html {
 
     html!(
         <div>
-
+        <h2>{"Levels"}</h2>
         <table>
             {rows}
         </table>
 
-        <ButtonComponent<AddLevelMessage> message={AddLevelMessage::default()}/>
-        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
-        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+        <ButtonComponent<AddLevelMessage> property={AddLevelMessage::default()}/>
+        <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> property={BackMessage::default()}/>
 
         </div>
     )
@@ -109,10 +110,11 @@ pub fn levels_control() -> Html {
 pub fn class_control() -> Html {
     html!(
         <div>
-        <CarouselComponent<ChooseClassMessage> />
+        <h2>{"Class"}</h2>
+        <CarouselComponent<ChooseClassMessage > property={ChooseClassMessage::default()} />
 
-        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
-        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+        <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> property={BackMessage::default()}/>
 
         </div>
     )
@@ -122,24 +124,63 @@ pub fn class_control() -> Html {
 pub fn feature_control() -> Html {
     html!(
         <div>
-        <CarouselComponent<ChooseFeatureMessage> />
+        <h2>{"Feature"}</h2>
+        <CarouselComponent<ChooseFeatureMessage> property={ChooseFeatureMessage::default()} />
 
-        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
-        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+        <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> property={BackMessage::default()}/>
 
         </div>
     )
 }
 
 #[function_component(StatsControl)]
-pub fn stats_control() -> Html{
+pub fn stats_control() -> Html {
+    use crate::data::Ability::*;
+
+    let remaining_points = use_selector(|x: &CreationState| x.character.stats.points_remaining());
+
     html!(
         <div>
-        <CarouselComponent<ChooseFeatureMessage> />
+        <h2>{"Stats"}</h2>
+        <form>
+        <div class="grid">
+            <NumberComponent <u8, StatProperty> property={StatProperty(Strength)} />
+            <NumberComponent <u8, StatProperty> property={StatProperty(Dexterity)} />
+            <NumberComponent <u8, StatProperty> property={StatProperty(Constitution)} />
+            <NumberComponent <u8, StatProperty> property={StatProperty(Wisdom)} />
+            <NumberComponent <u8, StatProperty> property={StatProperty(Intelligence)} />
+            <NumberComponent <u8, StatProperty> property={StatProperty(Charisma)} />
 
-        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
-        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+            <label for="remaining"> {"Points Remaining"}
+                <input type="number" name="remaining" readonly={true} value= {remaining_points.to_string()} />
+          </label>
 
+          </div>
+
+        </form>
+
+        <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> property={BackMessage::default()}/>
+
+        </div>
+    )
+}
+
+#[function_component(FinishedControl)]
+pub fn finished_control() -> Html {
+    let character = use_selector(|x: &CreationState| x.character.clone());
+
+    let v = serde_json::to_string(&character).unwrap_or_default();
+
+    html!(
+        <div>
+        <h2>{"Output"}</h2>
+        <code>
+            
+        {v.to_string()}
+        </code>
+        <ButtonComponent<BackMessage> property={BackMessage::default()}/>
         </div>
     )
 }

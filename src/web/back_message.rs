@@ -9,8 +9,9 @@ pub struct BackMessage {}
 
 impl StoreProperty for BackMessage {
     type State = CreationState;
+    type Value = ();
 
-    fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
+    fn try_apply(&self,value: &Self::Value, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
         use Stage::*;
         match state.stage.clone() {
             Name => None,
@@ -22,6 +23,11 @@ impl StoreProperty for BackMessage {
             Backstory => Some(state.change_stage(Stats).into()),
             Finished => Some(state.change_stage(Backstory).into()),
         }
+    }
+
+    
+    fn get_current_value(&self, state: &Self::State) -> Self::Value {
+        ()
     }
 }
 

@@ -8,17 +8,7 @@ use std::{
 
 use super::character_stats::CharacterStats;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Character {
-    pub name: Arc<String>,
-    pub background: BackgroundChoice,
 
-    pub levels: Arc<Vec<ClassLevel>>,
-
-    pub stats: CharacterStats,
-
-    pub backstory: Arc<String>,
-}
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BackgroundChoice(pub Arc<String>);

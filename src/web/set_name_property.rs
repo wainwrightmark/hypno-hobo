@@ -1,65 +1,62 @@
-use std::str::FromStr;
-
+use super::CreationState;
 use crate::components::{StoreProperty, TextProperty};
 
-use super::CreationState;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct SetNameProperty();
 
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SetNameProperty(String);
-
-impl StoreProperty for SetNameProperty{
+impl StoreProperty for SetNameProperty {
     type State = CreationState;
+    type Value = String;
 
-    fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
-            Some(state.mutate_character(|x|x.name = self.0.clone().into()).into())
+    fn try_apply(
+        &self,
+        value: &Self::Value,
+        state: std::rc::Rc<Self::State>,
+    ) -> Option<std::rc::Rc<Self::State>> {
+        Some(
+            state
+                .mutate_character(|x| x.name = value.clone().into())
+                .into(),
+        )
     }
-}
 
-impl FromStr for SetNameProperty{
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(s.to_string()))
-    }
-}
-
-impl TextProperty for SetNameProperty{
-    fn get_current_value(state: &Self::State) -> String {
+    fn get_current_value(&self, state: &Self::State) -> Self::Value {
         state.character.name.as_ref().clone()
     }
+}
 
-    fn placeholder()-> &'static str {
+impl TextProperty for SetNameProperty {
+    fn placeholder(&self) -> &'static str {
         "Character Name"
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct SetBackstoryProperty();
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SetBackstoryProperty(String);
-
-impl StoreProperty for SetBackstoryProperty{
+impl StoreProperty for SetBackstoryProperty {
     type State = CreationState;
+    type Value = String;
 
-    fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
-            Some(state.mutate_character(|x|x.backstory = self.0.clone().into()).into())
-    }
-}
-
-impl FromStr for SetBackstoryProperty{
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(s.to_string()))
-    }
-}
-
-impl TextProperty for SetBackstoryProperty{
-    fn get_current_value(state: &Self::State) -> String {
+    fn get_current_value(&self, state: &Self::State) -> Self::Value {
         state.character.backstory.as_ref().clone()
     }
 
-    fn placeholder()-> &'static str {
+    fn try_apply(
+        &self,
+        value: &Self::Value,
+        state: std::rc::Rc<Self::State>,
+    ) -> Option<std::rc::Rc<Self::State>> {
+        Some(
+            state
+                .mutate_character(|x| x.backstory = value.clone().into())
+                .into(),
+        )
+    }
+}
+
+impl TextProperty for SetBackstoryProperty {
+    fn placeholder(&self) -> &'static str {
         "Backstory"
     }
 }

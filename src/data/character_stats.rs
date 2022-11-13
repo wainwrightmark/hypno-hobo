@@ -1,6 +1,7 @@
 use std::ops::{Index, IndexMut};
 
 use serde::{Deserialize, Serialize};
+use strum::Display;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct CharacterStats {
@@ -65,7 +66,7 @@ impl IndexMut<Ability> for CharacterStats {
     }
 }
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Display)]
 pub enum Ability {
     Strength,
     Dexterity,

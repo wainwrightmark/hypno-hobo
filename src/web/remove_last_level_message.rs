@@ -9,8 +9,9 @@ pub struct RemoveLastLevelMessage {}
 
 impl StoreProperty for RemoveLastLevelMessage {
     type State = CreationState;
+    type Value = ();
 
-    fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
+    fn try_apply(&self, value: &Self::Value, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
         if state.character.levels.len() == 0 {
             None
         } else {
@@ -28,6 +29,10 @@ impl StoreProperty for RemoveLastLevelMessage {
                 character,
             }.into())
         }
+    }
+
+    fn get_current_value(&self, state: &Self::State) -> Self::Value {
+        ()
     }
 }
 

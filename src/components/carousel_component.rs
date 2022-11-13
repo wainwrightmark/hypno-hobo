@@ -7,17 +7,21 @@ use yew_hooks::{use_swipe, UseSwipeDirection};
 use yewdux::prelude::*;
 
 #[function_component(CarouselComponent)]
-pub fn carousel_component<T: CarouselProperty + 'static>() -> Html {
+pub fn carousel_component<T: CarouselProperty + 'static>(props: &BasicProps<T>) -> Html {
     let (state, dispatch) = use_store::<T::State>();
     let node = use_node_ref();
     let swipe_state = use_swipe(node.clone());
 
-    let values = T::get_values(state.as_ref());
-    let current_value_rc = use_selector(|state: &T::State| T::get_current_value(state));
+    let values = props.property.get_values(state.as_ref());
+    let current_value_rc = {
+        let property = props.property.clone();
+        use_selector(move |state: &T::State| property.clone().get_current_value(state))
+    };
     let current_value = current_value_rc.as_ref();
     let current_index = values
         .iter()
-        .position(|x| x == current_value).unwrap_or_default(); //or zero
+        .position(|x| x == current_value)
+        .unwrap_or_default(); //or zero
                               //.expect("Selected value was not one of the possible values.");
     let previous = if current_index == 0 {
         current_value.clone()
@@ -28,16 +32,24 @@ pub fn carousel_component<T: CarouselProperty + 'static>() -> Html {
         current_value.clone()
     } else {
         values[current_index + 1].clone()
-    };    
+    };
 
     let select_previous = {
         let previous = previous.clone();
-        dispatch.apply_callback(move |_| PropertyReducer(previous.clone()))
+        let property = props.property.clone();
+        dispatch.apply_callback(move |_| PropertyReducer {
+            property: property.clone(),
+            value: previous.clone(),
+        })
     };
 
     let select_next = {
         let next = next.clone();
-        dispatch.apply_callback(move |_| PropertyReducer(next.clone()))
+        let property = props.property.clone();
+        dispatch.apply_callback(move |_| PropertyReducer {
+            property: property.clone(),
+            value: next.clone(),
+        })
     };
 
     let can_select_previous = current_index != 0;
@@ -53,19 +65,27 @@ pub fn carousel_component<T: CarouselProperty + 'static>() -> Html {
                 classes!("carousel-item", "carousel-item-hidden")
             };
 
-            value.get_html(state.as_ref(), classes)
+            props.property.get_html(value, state.as_ref(), classes)
         })
         .collect_vec();
 
     // You can depend on direction/swiping etc.
     {
         let swipe_state = swipe_state.clone();
+        let property = props.property.clone();
+
         use_effect_with_deps(
             move |direction| {
                 // Do something based on direction.
                 match **direction {
-                    UseSwipeDirection::Left => dispatch.apply(PropertyReducer(next.clone())),
-                    UseSwipeDirection::Right => dispatch.apply(PropertyReducer(previous.clone())),
+                    UseSwipeDirection::Left => dispatch.apply(PropertyReducer {
+                        property: property.clone(),
+                        value: next.clone(),
+                    }),
+                    UseSwipeDirection::Right => dispatch.apply(PropertyReducer {
+                        property: property.clone(),
+                        value: previous.clone(),
+                    }),
                     _ => (),
                 }
                 || ()
@@ -76,7 +96,7 @@ pub fn carousel_component<T: CarouselProperty + 'static>() -> Html {
 
     html! {
         <>
-        <div class="carousel" ref={node}>
+        <div class="carousel" ref={node} style={props.style.clone()} class={props.classes.clone()}>
             {items}
 
             <div class="carousel-actions">
