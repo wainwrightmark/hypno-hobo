@@ -3,35 +3,27 @@ use web_sys::HtmlSelectElement;
 use yew::prelude::*;
 use yewdux::prelude::*;
 
-use super::messages::SelectMessage;
-
-#[derive(Properties, PartialEq)]
-
-pub struct ClassAndStyle {
-    #[prop_or_default()]
-    pub classes: Classes,
-    #[prop_or_default()]
-    pub style: AttrValue,
-}
+use crate::components::*;
 
 #[function_component(SelectComponent)]
-pub fn select_component<S: SelectMessage<TState> + 'static, TState: Store>(
-    props: &ClassAndStyle,
-) -> Html {
-    let onchange = Dispatch::<TState>::new().apply_callback(|e: Event| {
+pub fn select_component<T: SelectMessage>(props: &BasicProps) -> Html {
+    let (state, dispatch) = use_store::<T::State>();
+
+    let onchange = dispatch.apply_callback(|e: Event| {
         let input: HtmlSelectElement = e.target_unchecked_into();
         let s = input.value();
 
-        let v = S::parse_repr(s.as_str());
-        v
+        let v = T::parse_repr(s.as_str());
+        MessageReducer(v)
     });
-    let current_value = use_selector(|state: &TState| S::get_current_value(state));
+    let current_value = T::get_current_value(state.as_ref());
 
-    let options = S::get_values()
+    let options = T::get_values(state.as_ref())
         .into_iter()
         .map(|value| {
-            let selected = value == *current_value;
-            html!(  <option value={value.repr()} {selected} disabled={value.disabled()}> {value.name()}  </option>
+            let selected = value == &current_value;
+            let disabled = T::is_disabled(value, state.clone());
+            html!(  <option value={value.repr()} {selected} disabled={disabled}> {value.text()}  </option>
             )
         })
         .collect_vec();
