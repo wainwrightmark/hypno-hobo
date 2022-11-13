@@ -3,7 +3,6 @@ use multimap::MultiMap;
 use serde::{Deserialize, Serialize};
 use std::{
     num::NonZeroU8,
-    ops::{Index, IndexMut},
     sync::Arc,
 };
 
@@ -32,7 +31,7 @@ impl From<&Background> for BackgroundChoice {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassLevel {
-    pub class_name: Arc<String>,
+    pub class: Arc<String>,
     pub feature: Option<Arc<String>>,
 }
 
@@ -75,6 +74,7 @@ impl TryFrom<Vec<DataRow>> for DataDictionary {
 
                     let feature = ClassFeature {
                         name: row.name.into(),
+                        class_name: class.clone().into(),
                         description: row.description.into(),
                         image: row.image,
                         level,
@@ -123,15 +123,16 @@ pub struct Class {
     pub description: Arc<String>,
     pub image: Option<ImageUrl>,
 
-    pub features_by_level: Arc<MultiMap<NonZeroU8, Arc<ClassFeature>>>,
+    pub features_by_level: Arc<MultiMap<usize, Arc<ClassFeature>>>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClassFeature {
     pub name: Arc<String>,
+    pub class_name: Arc<String>,
     pub description: Arc<String>,
     pub image: Option<ImageUrl>,
-    pub level: NonZeroU8,
+    pub level: usize,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
@@ -147,7 +148,7 @@ pub struct DataRow {
     pub name: String,
     pub data_row_type: DataRowType,
     pub parent: Option<String>,
-    pub level: Option<NonZeroU8>,
+    pub level: Option<usize>,
     pub image: Option<ImageUrl>,
     pub description: String,
 }

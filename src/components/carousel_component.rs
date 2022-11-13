@@ -7,7 +7,7 @@ use yew_hooks::{use_swipe, UseSwipeDirection};
 use yewdux::prelude::*;
 
 #[function_component(CarouselComponent)]
-pub fn carousel_component<T: CarouselMessage + 'static>() -> Html {
+pub fn carousel_component<T: CarouselProperty + 'static>() -> Html {
     let (state, dispatch) = use_store::<T::State>();
     let node = use_node_ref();
     let swipe_state = use_swipe(node.clone());
@@ -17,8 +17,7 @@ pub fn carousel_component<T: CarouselMessage + 'static>() -> Html {
     let current_value = current_value_rc.as_ref();
     let current_index = values
         .iter()
-        .position(|x| x == current_value)
-        .unwrap_or_default(); //or zero
+        .position(|x| x == current_value).unwrap_or_default(); //or zero
                               //.expect("Selected value was not one of the possible values.");
     let previous = if current_index == 0 {
         current_value.clone()
@@ -29,16 +28,16 @@ pub fn carousel_component<T: CarouselMessage + 'static>() -> Html {
         current_value.clone()
     } else {
         values[current_index + 1].clone()
-    };
+    };    
 
     let select_previous = {
         let previous = previous.clone();
-        dispatch.apply_callback(move |_| MessageReducer(previous.clone()))
+        dispatch.apply_callback(move |_| PropertyReducer(previous.clone()))
     };
 
     let select_next = {
         let next = next.clone();
-        dispatch.apply_callback(move |_| MessageReducer(next.clone()))
+        dispatch.apply_callback(move |_| PropertyReducer(next.clone()))
     };
 
     let can_select_previous = current_index != 0;
@@ -65,8 +64,8 @@ pub fn carousel_component<T: CarouselMessage + 'static>() -> Html {
             move |direction| {
                 // Do something based on direction.
                 match **direction {
-                    UseSwipeDirection::Left => dispatch.apply(MessageReducer(next.clone())),
-                    UseSwipeDirection::Right => dispatch.apply(MessageReducer(previous.clone())),
+                    UseSwipeDirection::Left => dispatch.apply(PropertyReducer(next.clone())),
+                    UseSwipeDirection::Right => dispatch.apply(PropertyReducer(previous.clone())),
                     _ => (),
                 }
                 || ()

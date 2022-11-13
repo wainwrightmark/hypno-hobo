@@ -6,7 +6,7 @@ use yewdux::prelude::*;
 use crate::components::*;
 
 #[function_component(SelectComponent)]
-pub fn select_component<T: SelectMessage>(props: &BasicProps) -> Html {
+pub fn select_component<T: SelectProperty>(props: &BasicProps) -> Html {
     let (state, dispatch) = use_store::<T::State>();
 
     let onchange = dispatch.apply_callback(|e: Event| {
@@ -14,7 +14,7 @@ pub fn select_component<T: SelectMessage>(props: &BasicProps) -> Html {
         let s = input.value();
 
         let v = T::parse_repr(s.as_str());
-        MessageReducer(v)
+        PropertyReducer(v)
     });
     let current_value = T::get_current_value(state.as_ref());
 

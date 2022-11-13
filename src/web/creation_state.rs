@@ -12,8 +12,6 @@ use itertools::Itertools;
 
 use bytes::Buf;
 
-use yewdux::prelude::*;
-
 #[derive(PartialEq, Eq, Store, Clone, Serialize, Deserialize)]
 #[store(storage = "local", storage_tab_sync)]
 pub struct CreationState {
@@ -40,7 +38,7 @@ impl Default for CreationState {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Serialize, Deserialize, Default)]
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize, Default, Debug)]
 pub enum Stage {
     #[default]
     Name,
@@ -48,11 +46,10 @@ pub enum Stage {
     Levels,
 
     Class {
-        class: Arc<String>,
+        class: Arc<Class>,
     },
     ClassFeature {
-        class: Arc<String>,
-        feature: Option<Arc<String>>,
+        feature: Arc<ClassFeature>,
     },
     Stats,
     Backstory,
@@ -67,6 +64,32 @@ impl CreationState {
             character: self.character.clone(),
             dictionary: self.dictionary.clone(),
         }
+    }
+
+    pub fn mutate_character<F>(&self, func: F) -> Self
+    where
+        F: FnOnce(&mut Character),
+    {
+        let mut character = self.character.clone();
+        func(&mut character);
+
+        Self {
+            stage: self.stage.clone(),
+            character,
+            dictionary: self.dictionary.clone(),
+        }
+    }
+
+    pub fn add_level(&self, class: Arc<String>, feature: Option<Arc<String>>) -> Self {
+        self.mutate_character(|character| {
+            let mut levels = character.levels.as_ref().clone();
+            levels.push(ClassLevel {
+                class: class.clone(),
+                feature: feature.clone(),
+            });
+            character.levels = levels.into();
+        })
+        .change_stage(Stage::Levels)
     }
 
     pub async fn setup() {
@@ -91,5 +114,37 @@ impl CreationState {
         let data: DataDictionary = rows.try_into()?;
 
         Ok(data)
+    }
+
+    pub fn try_get_class(&self, class_name: Arc<String>) -> Option<Class> {
+        self.dictionary
+            .classes
+            .iter()
+            .cloned()
+            .find(|c| c.name == class_name)
+    }
+
+    pub fn get_level_of_class(&self, class_name: Arc<String>) -> usize {
+        self.character
+            .levels
+            .iter()
+            .filter(|x| x.class == class_name)
+            .count()
+    }
+
+    pub fn first_feature_of_next_class_level(
+        &self,
+        class_name: Arc<String>,
+    ) -> Result<Option<Arc<ClassFeature>>, ()> {
+        if let Some(class) = self.try_get_class(class_name) {
+            let level = self.get_level_of_class(class.name);
+            if let Some(first_feature) = class.features_by_level.get(&(1 + level)) {
+                Ok(Some(first_feature.clone()))
+            } else {
+                Ok(None) //No features
+            }
+        } else {
+            Err(()) //Class not found
+        }
     }
 }

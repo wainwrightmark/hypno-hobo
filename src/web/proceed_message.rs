@@ -1,14 +1,11 @@
-use crate::{
-    components::{messages::ButtonMessage, StoreMessage},
-    data::data_dictionary::{Character, ClassLevel},
-};
+use crate::components::{properties::ButtonProperty, StoreProperty};
 
 use super::creation_state::{CreationState, Stage};
 
 #[derive(Default, Copy, Clone, PartialEq, Eq)]
 pub struct ProceedMessage {}
 
-impl StoreMessage for ProceedMessage {
+impl StoreProperty for ProceedMessage {
     type State = CreationState;
 
     fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
@@ -29,34 +26,20 @@ impl StoreMessage for ProceedMessage {
                     Some(state.change_stage(Stats).into())
                 }
             }
-            Class { class } => Some(
-                state
-                    .change_stage(ClassFeature {
-                        class,
-                        feature: None,
-                    })
-                    .into(),
-            ),
-            ClassFeature { class, feature } => {
-                let mut levels = state.character.levels.as_ref().clone();
-                levels.push(ClassLevel {
-                    class_name: class,
-                    feature,
-                });
-                let character = Character {
-                    levels: levels.into(),
-                    ..state.character.clone()
-                };
-
-                Some(
-                    CreationState {
-                        stage: Levels,
-                        character: character.into(),
-                        dictionary: state.dictionary.clone(),
-                    }
-                    .into(),
-                )
+            Class { class } => {
+                match state.first_feature_of_next_class_level(class.name.clone()) {
+                    Ok(Some(feature)) => Some(
+                        state
+                            .change_stage(Stage::ClassFeature {
+                                feature: feature.clone(),
+                            })
+                            .into(),
+                    ),
+                    Ok(None) => Some(state.add_level(class.name.clone(), None).into()),
+                    Err(_) => None, //class does not exist
+                }
             }
+            ClassFeature {  feature } => Some(state.add_level(feature.class_name.clone(), Some(feature.name.clone())).into()),
             Stats => {
                 if state.character.stats.is_legal() {
                     Some(state.change_stage(Backstory).into())
@@ -76,8 +59,8 @@ impl StoreMessage for ProceedMessage {
     }
 }
 
-impl ButtonMessage for ProceedMessage {
-    fn button_text(&self, state: std::rc::Rc<Self::State>) -> &'static str {
+impl ButtonProperty for ProceedMessage {
+    fn button_text(&self, _state: std::rc::Rc<Self::State>) -> &'static str {
         "Proceed"
     }
 }

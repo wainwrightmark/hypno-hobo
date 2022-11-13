@@ -3,7 +3,7 @@ use yew::prelude::*;
 use yewdux::prelude::*;
 
 use crate::components::*;
-use crate::data::*;
+
 use crate::web::*;
 
 #[function_component(App)]
@@ -26,26 +26,31 @@ pub fn content() -> Html {
         Name => html!(<NameControl/>),
         Background => html!(<BackgroundControl />),
         Levels => html!(<LevelsControl />),
-        Class { class } => todo!(),
-        ClassFeature { class, feature } => todo!(),
-        Stats => todo!(),
-        Backstory => todo!(),
+        Class { class: _ } => html!(<ClassControl />),
+        ClassFeature { feature: _ } => html!(<FeatureControl />),
+        Stats => html!(<StatsControl />),
+        Backstory => html!(<BackstoryControl />),
         Finished => todo!(),
     }
 }
 
 #[function_component(NameControl)]
 pub fn name_control() -> Html {
-    let value = use_selector(|state: &CreationState| state.character.name.clone());
-
-    let oninput = Callback::from(move |e: InputEvent| {
-        let input: HtmlInputElement = e.target_unchecked_into();
-        Dispatch::<CreationState>::new().reduce_mut(|x| x.character.name = input.value().into());
-    });
 
     html!(
         <div>
-            <input type="text" id="name-input" name="input" placeholder="Character Name" value={value.to_string()} {oninput}/>
+            <TextComponent<SetNameProperty> />
+            <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
+        </div>
+    )
+}
+
+#[function_component(BackstoryControl)]
+pub fn backstory_control() -> Html {
+
+    html!(
+        <div>
+            <TextComponent<SetBackstoryProperty> />
             <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
         </div>
     )
@@ -69,10 +74,17 @@ pub fn levels_control() -> Html {
     let rows = character
         .levels
         .iter()
-        .map(|x| {
+        .enumerate()
+        .map(|(index, x)| {
+            let is_last = index + 1 == character.levels.len();
             html!(
                 <tr>
-                // <td>{x.} </td>
+                <td>{x.class.clone()} </td>
+                <td>{x.feature.clone()} </td>
+                <td><ButtonComponent<AddLevelOfClassMessage> message={AddLevelOfClassMessage(x.class.clone())}  /> </td>
+                <td>
+                {if is_last {html!(<ButtonComponent<RemoveLastLevelMessage> message={RemoveLastLevelMessage::default()} />)} else{html!(<> </>)}}
+                </td>
                 </tr>
             )
         })
@@ -85,8 +97,46 @@ pub fn levels_control() -> Html {
             {rows}
         </table>
 
-        <CarouselComponent<ChooseBackgroundMessage> />
-        <ButtonComponent<AddLevelOfClassMessage> message={AddLevelOfClassMessage::default()}/>
+        <ButtonComponent<AddLevelMessage> message={AddLevelMessage::default()}/>
+        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+
+        </div>
+    )
+}
+
+#[function_component(ClassControl)]
+pub fn class_control() -> Html {
+    html!(
+        <div>
+        <CarouselComponent<ChooseClassMessage> />
+
+        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+
+        </div>
+    )
+}
+
+#[function_component(FeatureControl)]
+pub fn feature_control() -> Html {
+    html!(
+        <div>
+        <CarouselComponent<ChooseFeatureMessage> />
+
+        <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
+        <ButtonComponent<BackMessage> message={BackMessage::default()}/>
+
+        </div>
+    )
+}
+
+#[function_component(StatsControl)]
+pub fn stats_control() -> Html{
+    html!(
+        <div>
+        <CarouselComponent<ChooseFeatureMessage> />
+
         <ButtonComponent<ProceedMessage> message={ProceedMessage::default()}/>
         <ButtonComponent<BackMessage> message={BackMessage::default()}/>
 

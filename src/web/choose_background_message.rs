@@ -1,4 +1,3 @@
-use strum::IntoEnumIterator;
 use yew::html;
 use yewdux::{prelude::Dispatch, store::Reducer};
 
@@ -9,15 +8,15 @@ use super::{creation_state::CreationState, proceed_message::ProceedMessage};
 #[derive(Clone, PartialEq)]
 pub struct ChooseBackgroundMessage(BackgroundChoice);
 
-impl StoreMessage for ChooseBackgroundMessage {
+impl StoreProperty for ChooseBackgroundMessage {
     type State = CreationState;
 
     fn try_apply(&self, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
-        todo!()
+        Some(state.mutate_character(|x|x.background = self.0.clone()).into())
     }
 }
 
-impl CarouselMessage for ChooseBackgroundMessage {
+impl CarouselProperty for ChooseBackgroundMessage {
     fn get_values(state: &Self::State) -> Vec<Self> {
         let vec: Vec<_> = state
             .dictionary
@@ -56,7 +55,7 @@ impl CarouselMessage for ChooseBackgroundMessage {
         };
 
         let onclick = Dispatch::<CreationState>::new()
-            .apply_callback(|_| MessageReducer(ProceedMessage::default()));
+            .apply_callback(|_| PropertyReducer(ProceedMessage::default()));
         html!(
             <div class={classes}>
                 <h5 class="title" style="text-align: center;">{background.name}</h5>
@@ -78,6 +77,10 @@ impl CarouselMessage for ChooseBackgroundMessage {
             </div>
         )
     }
+
+    // fn as_button() -> Option<Box<dyn yewdux::store::Reducer<Self::State>>> {
+    //     Some(Box::new(PropertyReducer(ProceedMessage{})))
+    // }
 }
 
 impl Reducer<CreationState> for ChooseBackgroundMessage {
