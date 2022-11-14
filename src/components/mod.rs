@@ -5,6 +5,7 @@ pub mod properties;
 pub mod select_component;
 pub mod text_component;
 pub mod number_component;
+pub mod markdown;
 
 pub use crate::components::basic_props::*;
 pub use crate::components::button_component::*;
@@ -13,3 +14,4 @@ pub use crate::components::properties::*;
 pub use crate::components::select_component::*;
 pub use crate::components::text_component::*;
 pub use crate::components::number_component::*;
+pub use crate::components::markdown::*;

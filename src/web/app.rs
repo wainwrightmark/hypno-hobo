@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use yew::prelude::*;
 use yewdux::prelude::*;
 
@@ -7,12 +9,24 @@ use crate::web::*;
 
 #[function_component(App)]
 pub fn app() -> Html {
-    html! {
-        <div class="site">
-            <div class="container" >
-            <Content />
+    let no_data = *use_selector(|x: &CreationState| x.dictionary.classes.is_empty()).as_ref();
+
+    if no_data {
+        html! {
+            <div class="site">
+                <div class="container" >
+                {"Loading"}
+                </div>
             </div>
-        </div>
+        }
+    } else {
+        html! {
+            <div class="site">
+                <div class="container" >
+                <Content />
+                </div>
+            </div>
+        }
     }
 }
 
@@ -22,6 +36,7 @@ pub fn content() -> Html {
 
     use crate::web::creation_state::Stage::*;
     match stage.as_ref() {
+        CharacterSelect => html!(<CharacterSelectControl/>),
         Name => html!(<NameControl/>),
         Background => html!(<BackgroundControl />),
         Levels => html!(<LevelsControl />),
@@ -33,6 +48,35 @@ pub fn content() -> Html {
     }
 }
 
+#[function_component(CharacterSelectControl)]
+pub fn character_select_control() -> Html {
+    let state = use_store_value::<SavedCharactersState>();
+
+    let rows = state.characters.iter().map(|x| {
+        
+        let arc = Arc::new(x.clone());
+        html!(
+            <tr>
+            <td>{x.name.clone()} </td>
+            <td>{x.background.0.clone()} </td>
+            <td><ButtonComponent<LoadCharacterMessage> property={LoadCharacterMessage(arc.clone())}  /> </td>
+            <td><ButtonComponent<DeleteCharacterMessage> property={DeleteCharacterMessage(arc.clone())}  /> </td>
+            </tr>
+        )
+    })
+    .collect::<Html>();
+
+    html!(
+        <div>
+        <h2>{"Choose Character"}</h2>
+        <table>
+            {rows}
+        </table>
+            <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+        </div>
+    )
+}
+
 #[function_component(NameControl)]
 pub fn name_control() -> Html {
     html!(
@@ -40,6 +84,7 @@ pub fn name_control() -> Html {
         <h2>{"Name"}</h2>
             <TextComponent<SetNameProperty> property={SetNameProperty::default()} />
             <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
+            <ButtonComponent<BackMessage> property={BackMessage::default()}/>
         </div>
     )
 }
@@ -171,15 +216,19 @@ pub fn stats_control() -> Html {
 pub fn finished_control() -> Html {
     let character = use_selector(|x: &CreationState| x.character.clone());
 
-    let v = serde_json::to_string(&character).unwrap_or_default();
+    //let v = serde_json::to_string(&character).unwrap_or_default();
+    let character_html = character.to_html_string();
+    let md = character.to_markdown_string();
+    let encoded_md = base64::encode(&md);
+    let file_name = character.name.as_ref().clone() + ".md";
 
     html!(
         <div>
-        <h2>{"Output"}</h2>
-        <code>
-            
-        {v.to_string()}
-        </code>
+
+        <SafeHtml html={character_html} />
+        <a role="button"  style="width: 100%; margin-bottom: var(--spacing);" href={format!("data:application/octet-stream;charset=utf-8;base64,{}", encoded_md)}  download={file_name}>{"Download"}</a>
+
+        <ButtonComponent<ProceedMessage> property={ProceedMessage::default()}/>
         <ButtonComponent<BackMessage> property={BackMessage::default()}/>
         </div>
     )

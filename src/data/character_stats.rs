@@ -80,6 +80,12 @@ pub enum Ability {
 #[serde(transparent)]
 pub struct AbilityScore(pub u8);
 
+impl std::fmt::Display for AbilityScore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 impl Default for AbilityScore {
     fn default() -> Self {
         Self(10)

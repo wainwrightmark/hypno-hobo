@@ -41,7 +41,10 @@ impl Default for CreationState {
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize, Default, Debug)]
 pub enum Stage {
+
     #[default]
+    CharacterSelect,
+    
     Name,
     Background,
     Levels,

@@ -14,7 +14,8 @@ impl StoreProperty for BackMessage {
     fn try_apply(&self,value: &Self::Value, state: std::rc::Rc<Self::State>) -> Option<std::rc::Rc<Self::State>> {
         use Stage::*;
         match state.stage.clone() {
-            Name => None,
+            CharacterSelect => None,
+            Name => Some(state.change_stage(CharacterSelect).into()),
             Background => Some(state.change_stage(Name).into()),
             Levels => Some(state.change_stage(Background).into()),
             Class { .. } => Some(state.change_stage(Levels).into()),

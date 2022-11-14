@@ -1,4 +1,9 @@
-use crate::components::{properties::ButtonProperty, StoreProperty};
+use core::panic;
+
+use regex::internal::Char;
+use yewdux::prelude::Dispatch;
+
+use crate::{components::{properties::ButtonProperty, StoreProperty}, web::SavedCharactersState};
 
 use super::creation_state::{CreationState, Stage};
 
@@ -16,6 +21,11 @@ impl StoreProperty for ProceedMessage {
     ) -> Option<std::rc::Rc<Self::State>> {
         use Stage::*;
         match state.stage.clone() {
+
+            CharacterSelect=>{
+                Some(state.change_stage(Name).into())
+            }
+
             Name => {
                 if state.character.name.is_empty() {
                     None
@@ -63,17 +73,27 @@ impl StoreProperty for ProceedMessage {
                     Some(state.change_stage(Finished).into())
                 }
             }
-            Finished => None,
+            Finished => {
+
+                //panic!();
+                Dispatch::new().reduce_mut(|x: &mut SavedCharactersState|x.characters.push(state.character.clone()));
+
+                Some(state.change_stage(CharacterSelect).into())
+            },
         }
     }
 
-    fn get_current_value(&self, state: &Self::State) -> Self::Value {
+    fn get_current_value(&self, _: &Self::State) -> Self::Value {
         ()
     }
 }
 
 impl ButtonProperty for ProceedMessage {
-    fn button_text(&self, _state: std::rc::Rc<Self::State>) -> &'static str {
-        "Proceed"
+    fn button_text(&self, state: std::rc::Rc<Self::State>) -> &'static str {
+        match state.stage{
+            Stage::CharacterSelect => "New Character",
+            Stage::Finished => "Save",
+            _ => "Proceed",
+        }
     }
 }
