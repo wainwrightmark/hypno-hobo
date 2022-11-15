@@ -20,6 +20,7 @@ pub struct CreationState {
     pub character: Character,
     #[serde(skip)]
     pub dictionary: Arc<DataDictionary>,
+    pub saved_characters: Arc<Vec<Character>>,
 }
 
 impl Default for CreationState {
@@ -35,6 +36,7 @@ impl Default for CreationState {
             stage: Default::default(),
             character,
             dictionary: Default::default(),
+            saved_characters: Default::default()
         }
     }
 }
@@ -67,6 +69,7 @@ impl CreationState {
             stage,
             character: self.character.clone(),
             dictionary: self.dictionary.clone(),
+            saved_characters: self.saved_characters.clone()
         }
     }
 
@@ -81,6 +84,7 @@ impl CreationState {
             stage: self.stage.clone(),
             character,
             dictionary: self.dictionary.clone(),
+            saved_characters: self.saved_characters.clone()
         }
     }
 

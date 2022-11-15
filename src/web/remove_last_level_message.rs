@@ -27,6 +27,7 @@ impl StoreProperty for RemoveLastLevelMessage {
                 stage: state.stage.clone(),
                 dictionary: state.dictionary.clone(),
                 character,
+                saved_characters: state.saved_characters.clone()
             }.into())
         }
     }

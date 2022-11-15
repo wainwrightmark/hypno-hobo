@@ -3,7 +3,7 @@ use core::panic;
 use regex::internal::Char;
 use yewdux::prelude::Dispatch;
 
-use crate::{components::{properties::ButtonProperty, StoreProperty}, web::SavedCharactersState};
+use crate::{components::{properties::ButtonProperty, StoreProperty}, data::Character};
 
 use super::creation_state::{CreationState, Stage};
 
@@ -75,10 +75,18 @@ impl StoreProperty for ProceedMessage {
             }
             Finished => {
 
-                //panic!();
-                Dispatch::new().reduce_mut(|x: &mut SavedCharactersState|x.characters.push(state.character.clone()));
+                let mut new_characters = state.saved_characters.as_ref().clone();
+                new_characters.push(state.character.clone());
 
-                Some(state.change_stage(CharacterSelect).into())
+                let new_state = CreationState{
+                    stage: Stage::CharacterSelect,
+                    character: Character::new(),
+                    dictionary: state.dictionary.clone(),
+                    saved_characters: new_characters.into()
+
+                };
+
+                Some(new_state.into())
             },
         }
     }

@@ -50,9 +50,9 @@ pub fn content() -> Html {
 
 #[function_component(CharacterSelectControl)]
 pub fn character_select_control() -> Html {
-    let state = use_store_value::<SavedCharactersState>();
+    let characters = use_selector(|x: &CreationState| x.saved_characters.clone());
 
-    let rows = state.characters.iter().map(|x| {
+    let rows = characters.iter().map(|x| {
         
         let arc = Arc::new(x.clone());
         html!(

@@ -23,6 +23,17 @@ pub struct Character {
 }
 
 impl Character {
+
+    pub fn new()-> Self{
+        Self{
+            name: Default::default(),
+            background: BackgroundChoice(Default::default()),
+            levels: Default::default(),
+            stats: Default::default(),
+            backstory: Default::default(),
+        }
+    }
+
     pub fn to_markdown_elements(&self) -> Vec<MarkdownElement> {
         let mut vec: Vec<MarkdownElement> = Default::default();
 
